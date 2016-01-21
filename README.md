@@ -22,6 +22,6 @@ Used code from https://bitbucket.org/apacha/sensor-fusion-demo
 
 Created in Android Studio
 Devices used in development:
-  - Motorola Droid Maxx
-  - Motorola Droid Turbo
-  - Minix Neo X5 Mini (as server)
+  - Motorola Droid Maxx (4.4.4)
+  - Motorola Droid Turbo (5.1)
+  - Minix Neo X5 Mini (as server) (4.4.2)

@@ -21,3 +21,7 @@ Planned features:
 Used code from https://bitbucket.org/apacha/sensor-fusion-demo
 
 Created in Android Studio
+Devices used in development:
+  - Motorola Droid Maxx
+  - Motorola Droid Turbo
+  - Minix Neo X5 Mini (as server)

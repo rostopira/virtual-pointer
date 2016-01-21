@@ -5,7 +5,7 @@ Aim of this project is providing simple remote control of Android TV/Set-top-box
 Remote controls with gyroscope cost a lot and isn't so flexible as smartphone or tablet with touchscreen.
 
 Requirements:
-  - Android 4.2+
+  - Android 4.0.3+
   - Gyroscope, accelerometer, magnetometer
   
 Currently working:

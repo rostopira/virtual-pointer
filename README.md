@@ -3,6 +3,7 @@ Current status: development
 
 Aim of this project is providing simple remote control of Android TV/Set-top-boxes/TV-sticks in a way like Air Mouse do.
 Remote controls with gyroscope cost a lot and isn't so flexible as smartphone or tablet with touchscreen.
+
 Requirements:
   - Android 4.2+
   - Gyroscope, accelerometer, magnetometer

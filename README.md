@@ -19,4 +19,5 @@ Planned features:
   - Autodetect server in LAN
 
 Used code from https://bitbucket.org/apacha/sensor-fusion-demo
+
 Created in Android Studio

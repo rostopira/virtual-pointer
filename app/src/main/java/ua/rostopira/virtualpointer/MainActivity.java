@@ -1,45 +1,31 @@
 package ua.rostopira.virtualpointer;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import ua.rostopira.virtualpointer.sensorFusion.ImprovedOrientationSensor2Provider;
-import ua.rostopira.virtualpointer.sensorFusion.OrientationProvider;
-import ua.rostopira.virtualpointer.sensorFusion.Quaternion;
-
 public class MainActivity extends AppCompatActivity {
+    SensorFusion sensorFusion;
 
-    OrientationProvider currentOrientationProvider;
-    static double[] center = { 0, 0 };
-    static double[] angles = { 0, 0 };
-    UDPSender UDPS;
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        UDPS = new UDPSender();
-        currentOrientationProvider = new ImprovedOrientationSensor2Provider((SensorManager)getSystemService(SENSOR_SERVICE));
-
+        //Create round gestures zone
         final ImageView mFrame = (ImageView) findViewById(R.id.tap_button);
         mFrame.post(new Runnable() {
             @Override
@@ -51,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
                 mFrame.postInvalidate();
             }
         });
+        //TODO: add gestures support
         mFrame.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -58,17 +45,20 @@ public class MainActivity extends AppCompatActivity {
                     case MotionEvent.ACTION_DOWN:
                     case MotionEvent.ACTION_POINTER_DOWN:
                         mFrame.setImageResource(R.drawable.pressed_btn);
-                        UDPS.Send("P"+Angles());
+                        Singleton.get().sender.execute("T");
                         return true;
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_POINTER_UP:
                         mFrame.setImageResource(R.drawable.tap_btn);
-                        UDPS.Send("R"+Angles());
                         return true;
                 }
                 return false;
             }
         });
+
+        //TODO: add buttons (back, home, recent)
+
+        sensorFusion = new SensorFusion((SensorManager)getSystemService(SENSOR_SERVICE));
     }
 
     MenuItem btnService;
@@ -96,12 +86,11 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
 
         if (id == R.id.action_service) {
-            //if (serviceRunning(VirtualPointerService.class)) {
-            if (!isOn) { //TODO
-                currentOrientationProvider.start();
+            if (!isOn) { //TODO: make that like human
+                sensorFusion.start();
                 btnService.setIcon(R.drawable.ic_pause_white_36dp);
-            } else {
-                currentOrientationProvider.stop();
+            } else {//TODO: replace icons with symbols
+                sensorFusion.stop();
                 btnService.setIcon(R.drawable.ic_play_arrow_white_36dp);
             }
             isOn = !isOn;
@@ -114,21 +103,12 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void rightClick(View view) { UDPS.Send("RC"+ Angles()); }
+    public void rightClick(View view) {
+        Singleton.get().sender.execute("L");
+    }
 
     public void center(View view) {
-        center = angles;
-    }
-
-    static public void onPositionChanged(Quaternion q) {
-        angles = q.toEulerAngles();
-        angles[0] += center[0];
-        angles[1] += center[1];
-        new UDPSender().Send("M"+Angles() + " " + Long.toString(SystemClock.uptimeMillis()));
-    }
-
-    static String Angles() {
-        return " " + Double.toString(angles[0]) + " " + Double.toString(angles[1]);
+        Singleton.get().setCenter();
     }
 
     public void setIP() {
@@ -138,16 +118,16 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT);
+        input.append("192.168.1.");
         input.setLayoutParams(lp);
         alertDialog.setView(input);
         alertDialog.setCancelable(true);
         alertDialog.setPositiveButton("OK",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        UDPSender.IP = input.getText().toString();
+                        Singleton.get().setIP(input.getText().toString());
                     }
                 });
         alertDialog.show();
     }
-
 }

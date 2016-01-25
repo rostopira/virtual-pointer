@@ -1,11 +1,13 @@
-package ua.rostopira.virtualpointer.sensorFusion;
+package ua.rostopira.virtualpointer;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 
-import ua.rostopira.virtualpointer.MainActivity;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The orientation provider that delivers the absolute orientation from the {@link Sensor#TYPE_GYROSCOPE
@@ -17,8 +19,10 @@ import ua.rostopira.virtualpointer.MainActivity;
  * @author Alexander Pacha
  * 
  */
-public class ImprovedOrientationSensor2Provider extends OrientationProvider {
+public class SensorFusion implements SensorEventListener {
 
+    protected List<Sensor> sensorList = new ArrayList<Sensor>();
+    protected SensorManager sensorManager;
     /**
      * Constant specifying the factor between a Nano-second and a second
      */
@@ -131,52 +135,65 @@ public class ImprovedOrientationSensor2Provider extends OrientationProvider {
      * 
      * @param sensorManager The android sensor manager
      */
-    public ImprovedOrientationSensor2Provider(SensorManager sensorManager) {
-        super(sensorManager);
-
+    public SensorFusion(SensorManager sensorManager) {
+        this.sensorManager = sensorManager;
         //Add the gyroscope and rotation Vector
         sensorList.add(sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE));
         sensorList.add(sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR));
     }
 
+    public void start() {
+        for (Sensor sensor : sensorList) {
+            sensorManager.registerListener(this, sensor,
+                    SensorManager.SENSOR_DELAY_UI);
+        }
+    }
+
+    public void stop() {
+        for (Sensor sensor : sensorList) {
+            sensorManager.unregisterListener(this, sensor);
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) { }
+
     @Override
     public void onSensorChanged(SensorEvent event) {
 
         if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
-            // Process rotation vector (just safe it)
-
+            // Process rotation vector (just save it)
             float[] q = new float[4];
-            // Calculate angle. Starting with API_18, Android will provide this value as event.values[3], but if not, we have to calculate it manually.
+            // Calculate angle. Starting with API_18, Android will provide this value as event.values[3]
             SensorManager.getQuaternionFromVector(q, event.values);
-
             // Store in quaternion
-            quaternionRotationVector.setXYZW(q[1], q[2], q[3], -q[0]);
+            quaternionRotationVector= new Quaternion(q[1], q[2], q[3], -q[0]);
             if (!positionInitialised) {
-                // Override
-                quaternionGyroscope.set(quaternionRotationVector);
+                quaternionGyroscope = quaternionRotationVector.clone();
                 positionInitialised = true;
             }
+            return;
+        }
 
-        } else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
+        if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
             // Process Gyroscope and perform fusion
-
             // This timestep's delta rotation to be multiplied by the current rotation
             // after computing it from the gyro sample data.
             if (timestamp != 0) {
                 final float dT = (event.timestamp - timestamp) * NS2S;
                 // Axis of the rotation sample, not normalized yet.
-                float axisX = event.values[0];
-                float axisY = event.values[1];
-                float axisZ = event.values[2];
+                float X = event.values[0];
+                float Y = event.values[1];
+                float Z = event.values[2];
 
                 // Calculate the angular speed of the sample
-                gyroscopeRotationVelocity = Math.sqrt(axisX * axisX + axisY * axisY + axisZ * axisZ);
+                gyroscopeRotationVelocity = Math.sqrt(X * X + Y * Y + Z * Z);
 
                 // Normalize the rotation vector if it's big enough to get the axis
                 if (gyroscopeRotationVelocity > EPSILON) {
-                    axisX /= gyroscopeRotationVelocity;
-                    axisY /= gyroscopeRotationVelocity;
-                    axisZ /= gyroscopeRotationVelocity;
+                    X /= gyroscopeRotationVelocity;
+                    Y /= gyroscopeRotationVelocity;
+                    Z /= gyroscopeRotationVelocity;
                 }
 
                 // Integrate around this axis with the angular speed by the timestep
@@ -185,14 +202,13 @@ public class ImprovedOrientationSensor2Provider extends OrientationProvider {
                 // into a quaternion before turning it into the rotation matrix.
                 double thetaOverTwo = gyroscopeRotationVelocity * dT / 2.0f;
                 double sinThetaOverTwo = Math.sin(thetaOverTwo);
-                double cosThetaOverTwo = Math.cos(thetaOverTwo);
-                deltaQuaternion.setX((float) (sinThetaOverTwo * axisX));
-                deltaQuaternion.setY((float) (sinThetaOverTwo * axisY));
-                deltaQuaternion.setZ((float) (sinThetaOverTwo * axisZ));
-                deltaQuaternion.setW(-(float) cosThetaOverTwo);
+                deltaQuaternion.x = (float) (sinThetaOverTwo * X);
+                deltaQuaternion.y = (float) (sinThetaOverTwo * Y);
+                deltaQuaternion.z = (float) (sinThetaOverTwo * Z);
+                deltaQuaternion.w = -(float) Math.cos(thetaOverTwo);
 
                 // Move current gyro orientation
-                deltaQuaternion.multiplyByQuat(quaternionGyroscope, quaternionGyroscope);
+                quaternionGyroscope = deltaQuaternion.multiply(quaternionGyroscope);
 
                 // Calculate dot-product to calculate whether the two orientation sensors have diverged 
                 // (if the dot-product is closer to 0 than to 1), because it should be close to 1 if both are the same.
@@ -204,72 +220,39 @@ public class ImprovedOrientationSensor2Provider extends OrientationProvider {
                     if (Math.abs(dotProd) < OUTLIER_PANIC_THRESHOLD) {
                         panicCounter++;
                     }
-
                     // Directly use Gyro
-                    setOrientationQuaternionAndMatrix(quaternionGyroscope);
-
+                    Singleton.get().setOrientation(quaternionGyroscope);
                 } else {
                     // Both are nearly saying the same. Perform normal fusion.
-
                     // Interpolate with a fixed weight between the two absolute quaternions obtained from gyro and rotation vector sensors
                     // The weight should be quite low, so the rotation vector corrects the gyro only slowly, and the output keeps responsive.
-                    Quaternion interpolate = new Quaternion();
-                    quaternionGyroscope.slerp(quaternionRotationVector, interpolate,
+                    Quaternion interpolate = quaternionGyroscope.slerp(quaternionRotationVector,
                             (float) (INDIRECT_INTERPOLATION_WEIGHT * gyroscopeRotationVelocity));
 
                     // Use the interpolated value between gyro and rotationVector
-                    setOrientationQuaternionAndMatrix(interpolate);
+                    Singleton.get().setOrientation(interpolate);
                     // Override current gyroscope-orientation
-                    quaternionGyroscope.copyVec4(interpolate);
-
+                    quaternionGyroscope = interpolate.clone();
                     // Reset the panic counter because both sensors are saying the same again
                     panicCounter = 0;
+                    return;
                 }
 
                 if (panicCounter > PANIC_THRESHOLD) {
-                    Log.d("Rotation Vector",
-                            "Panic counter is bigger than threshold; this indicates a Gyroscope failure. Panic reset is imminent.");
-
+                    Log.d("Rotation Vector", "Panic counter is bigger than threshold - Gyroscope failure.");
                     if (gyroscopeRotationVelocity < 3) {
-                        Log.d("Rotation Vector",
-                                "Performing Panic-reset. Resetting orientation to rotation-vector value.");
-
+                        Log.d("Rotation Vector", "Panic reset");
                         // Manually set position to whatever rotation vector says.
-                        setOrientationQuaternionAndMatrix(quaternionRotationVector);
+                        Singleton.get().setOrientation(quaternionRotationVector);
                         // Override current gyroscope-orientation with corrected value
-                        quaternionGyroscope.copyVec4(quaternionRotationVector);
-
+                        quaternionGyroscope = quaternionRotationVector.clone();
                         panicCounter = 0;
-                    } else {
-                        Log.d("Rotation Vector",
-                                String.format(
-                                        "Panic reset delayed due to ongoing motion (user is still shaking the device). Gyroscope Velocity: %.2f > 3",
-                                        gyroscopeRotationVelocity));
+                        return;
                     }
+                    Log.d("Rotation Vector", "Panic reset delayed due to ongoing motion.");
                 }
             }
             timestamp = event.timestamp;
-        }
-    }
-
-    /**
-     * Sets the output quaternion and matrix with the provided quaternion and synchronises the setting
-     * 
-     * @param quaternion The Quaternion to set (the result of the sensor fusion)
-     */
-    private void setOrientationQuaternionAndMatrix(Quaternion quaternion) {
-        Quaternion correctedQuat = quaternion.clone();
-        // We inverted w in the deltaQuaternion, because currentOrientationQuaternion required it.
-        // Before converting it back to matrix representation, we need to revert this process
-        correctedQuat.w(-correctedQuat.w());
-
-        synchronized (syncToken) {
-            // Use gyro only
-            currentOrientationQuaternion.copyVec4(quaternion);
-
-            // Set the rotation matrix as well to have both representations
-            SensorManager.getRotationMatrixFromVector(currentOrientationRotationMatrix.matrix, correctedQuat.ToArray());
-            MainActivity.onPositionChanged(quaternion);
         }
     }
 }

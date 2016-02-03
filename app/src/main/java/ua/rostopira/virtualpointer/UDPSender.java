@@ -3,46 +3,38 @@ package ua.rostopira.virtualpointer;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 public class UDPSender extends AsyncTask<String, Void, Void> {
-    DatagramSocket socket;
     public static final int port = 6969;
+    InetAddress IP;
 
-    public UDPSender() {
-        try {
-            socket = new DatagramSocket(port, Singleton.get().IP);
-        } catch (Exception e) {
-            Log.e("UDPSender", "Failed to open socket");
-        }
+    public UDPSender(InetAddress ip) {
+        IP = ip;
     }
 
     @Override
     public Void doInBackground(String... message) {
-        if ( (socket==null) | (message[0]==null) ) {
-            Log.e("UDPSender", "Packet not sent. Null socket or message");
+        if (message[0] == null) {
+            Log.e("UDPSender", "Null message");
             return null;
         }
         String t = message[0];
         for (int i=1; i<message.length; i++)
             t = t+" "+message[i];
         byte[] bytes = t.getBytes();
-        DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
         try {
+            DatagramSocket socket = new DatagramSocket();
+            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, IP, port);
             socket.send(packet);
-            Log.d("UDPSender", "Packet sent");
-        } catch (IOException e) {
-            Log.e("UDPSender", "I/O Exception");
+            Log.d("UDPSender", "99 bottles on the wall");
+            socket.close();
+        } catch (Exception e) {
+            Log.e("UDPSender", "Exception. FUUUUUUUUUCKing network");
         }
         return null;
-    }
-
-    @Override
-    public void onCancelled(Void result) {
-        socket.close();
-        Log.d("UDPSender", "Socket closed due errors");
     }
 
 }

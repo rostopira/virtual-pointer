@@ -15,29 +15,77 @@
             android:background="?attr/colorPrimary" app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </android.support.design.widget.AppBarLayout>
-    
+
     <ImageView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginBottom="44dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="64dp"
         android:src="@drawable/tap_btn"
         android:layout_gravity="center_horizontal"
         android:id="@+id/tap_button"/>
 
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab2"
+            android:layout_gravity="top|left"
+            android:src="@drawable/ic_center_focus_strong_white_24dp"
+            android:onClick="center"
+            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/fab_margin"
+            android:layout_marginTop="72dp"/>
 
-    <android.support.design.widget.FloatingActionButton android:id="@+id/fab"
-        android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end" android:layout_margin="@dimen/fab_margin"
-        android:src="@drawable/ic_mouse_right_btn_white_24dp"
-        android:onClick="rightClick" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:layout_gravity="bottom"
+            android:layout_weight="3"
+            android:layout_marginRight="16dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginBottom="20dp">
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@color/colorAccent"
+                android:src="@drawable/ic_sysbar_back"
+                android:onClick="back" />
 
 
-    <android.support.design.widget.FloatingActionButton android:id="@+id/fab2"
-        android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:layout_gravity="bottom|start" android:layout_margin="@dimen/fab_margin"
-        android:src="@drawable/ic_center_focus_strong_white_24dp"
-        android:onClick="center"/>
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@color/colorAccent"
+                android:src="@drawable/ic_sysbar_home"
+                android:onClick="home" />
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@color/colorAccent"
+                android:src="@drawable/ic_sysbar_recent"
+                android:nestedScrollingEnabled="false"
+                android:onClick="recent" />
+
+
+        </LinearLayout>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_gravity="top|right"
+            android:src="@drawable/ic_mouse_right_btn_white_24dp"
+            android:onClick="rightClick"
+            android:layout_weight="1"
+            android:layout_marginRight="@dimen/fab_margin"
+            android:layout_marginTop="72dp"/>
 
 </android.support.design.widget.CoordinatorLayout>

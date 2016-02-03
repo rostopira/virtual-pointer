@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
                     case MotionEvent.ACTION_DOWN:
                     case MotionEvent.ACTION_POINTER_DOWN:
                         mFrame.setImageResource(R.drawable.pressed_btn);
-                        Singleton.get().sender.execute("T");
+                            Singleton.get().send("T");
                         return true;
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_POINTER_UP:
@@ -56,25 +56,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //TODO: add buttons (back, home, recent)
-
         sensorFusion = new SensorFusion((SensorManager)getSystemService(SENSOR_SERVICE));
     }
-
-    MenuItem btnService;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-
         MenuInflater inflater = getMenuInflater();
         inflater.inflate( R.menu.menu_main, menu );
-        btnService = menu.findItem(R.id.action_service);
-
         return true;
     }
-
-    boolean isOn = false;
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -84,31 +75,32 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-
-        if (id == R.id.action_service) {
-            if (!isOn) { //TODO: make that like human
-                sensorFusion.start();
-                btnService.setIcon(R.drawable.ic_pause_white_36dp);
-            } else {//TODO: replace icons with symbols
-                sensorFusion.stop();
-                btnService.setIcon(R.drawable.ic_play_arrow_white_36dp);
-            }
-            isOn = !isOn;
-        }
-
         if (id == R.id.action_setip) {
             setIP();
+            sensorFusion.start();
         }
 
         return super.onOptionsItemSelected(item);
     }
 
     public void rightClick(View view) {
-        Singleton.get().sender.execute("L");
+        Singleton.get().send("L");
     }
 
     public void center(View view) {
         Singleton.get().setCenter();
+    }
+
+    public void back(View view) {
+        Singleton.get().send("B");
+    }
+
+    public void home(View view) {
+        Singleton.get().send("H");
+    }
+
+    public void recent(View view) {
+        Singleton.get().send("RA");
     }
 
     public void setIP() {

@@ -30,7 +30,7 @@ final public class Singleton {
     public void setOrientation(Quaternion q) {
         current = q.clone();
         Quaternion t = q.substract(center);
-        send("M", t.EulerYaw(), t.EulerPitch(), Long.toString(SystemClock.uptimeMillis()));
+        send("M", t.EulerYaw(), t.EulerRoll(), Long.toString(SystemClock.uptimeMillis()));
     }
 
     public void setCenter() {

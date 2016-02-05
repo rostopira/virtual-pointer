@@ -8,11 +8,9 @@ import java.net.UnknownHostException;
 
 final public class Singleton {
     private static Singleton instance;
-    private Quaternion center, current;
     private InetAddress IP;
 
     private Singleton() {
-        center = new Quaternion();
         instance = this;
         setIP("192.168.1.2");
     }
@@ -28,13 +26,7 @@ final public class Singleton {
     }
 
     public void setOrientation(Quaternion q) {
-        current = q.clone();
-        Quaternion t = q.substract(center);
-        send("M", t.EulerYaw(), t.EulerRoll(), Long.toString(SystemClock.uptimeMillis()));
-    }
-
-    public void setCenter() {
-        center = current.clone();
+        send("M", q.getXY(), Long.toString(SystemClock.uptimeMillis()));
     }
 
     public boolean setIP(String ip) {

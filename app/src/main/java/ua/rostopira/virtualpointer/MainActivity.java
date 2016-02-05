@@ -87,9 +87,7 @@ public class MainActivity extends AppCompatActivity {
         Singleton.get().send("L");
     }
 
-    public void center(View view) {
-        Singleton.get().setCenter();
-    }
+    public void center(View view) { sensorFusion.setCenter(); }
 
     public void back(View view) {
         Singleton.get().send("B");

@@ -6,9 +6,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * The orientation provider that delivers the absolute orientation from the Gyroscope and Android
  * Rotation Vector.
@@ -19,8 +16,8 @@ import java.util.List;
  * @author Alexander Pacha
  */
 public class SensorFusion implements SensorEventListener {
-    protected List<Sensor> sensorList = new ArrayList<Sensor>();
-    protected SensorManager sensorManager;
+    private Sensor gyroscope, rotationVector;
+    private SensorManager sensorManager;
     /**
      * Constant specifying the factor between a Nano-second and a second
      */
@@ -120,21 +117,23 @@ public class SensorFusion implements SensorEventListener {
      */
     public SensorFusion(SensorManager sensorManager) {
         this.sensorManager = sensorManager;
-        sensorList.add(sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE));
-        sensorList.add(sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR));
+        gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        rotationVector = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
     }
 
     public void start() {
-        for (Sensor sensor : sensorList) {
-            sensorManager.registerListener(this, sensor,
-                    SensorManager.SENSOR_DELAY_UI);
-        }
+        sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_UI);
+        sensorManager.registerListener(this, rotationVector, SensorManager.SENSOR_DELAY_UI);
     }
 
     public void stop() {
-        for (Sensor sensor : sensorList) {
-            sensorManager.unregisterListener(this, sensor);
-        }
+        sensorManager.unregisterListener(this, gyroscope);
+        sensorManager.unregisterListener(this, rotationVector);
+    }
+
+    public void setCenter() {
+        quaternionGyroscope.center();
+        quaternionRotationVector.center();
     }
 
     @Override

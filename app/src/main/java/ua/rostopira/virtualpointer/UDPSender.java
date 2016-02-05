@@ -29,10 +29,10 @@ public class UDPSender extends AsyncTask<String, Void, Void> {
             DatagramSocket socket = new DatagramSocket();
             DatagramPacket packet = new DatagramPacket(bytes, bytes.length, IP, port);
             socket.send(packet);
-            Log.d("UDPSender", "99 bottles on the wall");
+            Log.d("UDPSender", t);
             socket.close();
         } catch (Exception e) {
-            Log.e("UDPSender", "Exception. FUUUUUUUUUCKing network");
+            Log.e("UDPSender", "FUUUUUUUUUCKing network");
         }
         return null;
     }

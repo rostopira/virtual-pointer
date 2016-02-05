@@ -75,33 +75,62 @@ public class Quaternion {
             bufferQuat = input.clone();
         }
 
-        double sinHalfTheta = Math.sqrt(1.0 - cosHalftheta * cosHalftheta);
-        double halfTheta = Math.acos(cosHalftheta);
+        float sinHalfTheta = (float) Math.sqrt(1.0 - cosHalftheta * cosHalftheta);
+        float halfTheta = (float) Math.acos(cosHalftheta);
 
-        double ratioA = Math.sin((1 - t) * halfTheta) / sinHalfTheta;
-        double ratioB = Math.sin(t * halfTheta) / sinHalfTheta;
+        float ratioA = (float) Math.sin((1 - t) * halfTheta) / sinHalfTheta;
+        float ratioB = (float) Math.sin(t * halfTheta) / sinHalfTheta;
 
         float X,Y,Z,W;
-        W = ((float) (w * ratioA + bufferQuat.w * ratioB));
-        X = ((float) (x * ratioA + bufferQuat.x * ratioB));
-        Y = ((float) (y * ratioA + bufferQuat.y * ratioB));
-        Z = ((float) (z * ratioA + bufferQuat.z * ratioB));
+        W = w * ratioA + bufferQuat.w * ratioB;
+        X = x * ratioA + bufferQuat.x * ratioB;
+        Y = y * ratioA + bufferQuat.y * ratioB;
+        Z = z * ratioA + bufferQuat.z * ratioB;
         return new Quaternion(X,Y,Z,W);
     }
 
-    public String EulerYaw() {
-        return Float.toString(
-                (float) Math.atan2(2 * (y * w - x * z), 1 - 2 * (y * y - z * z)) );
+    /**
+     *
+     *  MAGIC
+     *  DO NOT TOUCH
+     *
+     */
+
+    Vector px = new Vector(1,0,0), pz = new Vector(1,0,0);
+    float hCos=1, hSin=0; // sin & cos used to rotate measured heading back by baseline amount
+    float headingBaseline = 0; // baseline compass heading
+    float inclinationBaseline = 0; // baseline inclination from horizontal
+    private final float sensitivity = 0.5f;
+
+    private void setVectors() {
+        px.x = 2*x*x -1 + 2*y*y;
+        px.y = 2*y*z -2*x*w;
+        px.z = 2*y*w + 2*x*z;
+        pz.x = 2*y*w - 2*x*z;
+        pz.y = 2*z*w + 2*x*y;
+        pz.z = 2*x*x - 1 + 2*w*w;
     }
 
-    public String EulerPitch() {
-        return Float.toString(
-                (float) Math.asin(2 * (x * y + z * w)) );
+    public String getXY() {
+        setVectors();
+        float xeff = hCos*px.x - hSin*px.y;
+        float yeff = hSin*px.x + hCos*px.y;
+        float headingDelta = (float) Math.atan2(yeff, xeff);
+        float x = sensitivity * (float) Math.tan(Math.asin(pz.y) - inclinationBaseline);
+        headingBaseline = (float) -Math.atan2(px.y,  px.x);
+        hSin = (float) Math.sin(headingBaseline);
+        hCos = (float) Math.cos(headingBaseline);
+        inclinationBaseline= (float) Math.asin(pz.y);
+        float y = sensitivity * (float) Math.tan(headingDelta);
+        return Float.toString(x) + " " + Float.toString(y);
     }
 
-    public String EulerRoll() {
-        return Float.toString(
-                (float) Math.atan2( 2*(x*w - y*z),    1 - 2*(x*x - z*z) ) );
+    public void center() {
+        setVectors();
+        headingBaseline = (float) -Math.atan2(px.y,  px.x);
+        hSin = (float) Math.sin(headingBaseline);
+        hCos = (float) Math.cos(headingBaseline);
+        inclinationBaseline= (float) Math.asin(pz.y);
     }
 
 }

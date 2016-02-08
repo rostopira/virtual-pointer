@@ -1,9 +1,10 @@
 package ua.rostopira.virtualpointer;
 
 /**
- * The Quaternion class. A Quaternion is a four-dimensional vector that is used to represent rotations of a rigid body
- * in the 3D space. It is very similar to a rotation vector; it contains an angle, encoded into the w component
- * and three components to describe the rotation-axis (encoded into x, y, z).
+ * The Quaternion class. A Quaternion is a four-dimensional vector that is used to represent
+ * rotations of a rigid body in the 3D space. It is very similar to a rotation vector; it contains
+ * an angle, encoded into the w component and three components to describe the rotation-axis
+ * (encoded into x, y, z).
  */
 
 public class Quaternion {
@@ -53,12 +54,11 @@ public class Quaternion {
     }
 
     /**
-     * Get a linear interpolation between this quaternion and the input quaternion, storing the result in the output
-     * quaternion.
+     * Get a linear interpolation between this quaternion and the input quaternion.
      * 
      * @param input The quaternion to be slerped with this quaternion.
-     * @param t The ratio between the two quaternions where 0 <= t <= 1.0 . Increase value of t will bring rotation
-     *            closer to the input quaternion.
+     * @param t The ratio between the two quaternions where 0 <= t <= 1.0 . Increase value of t
+     *          will bring rotation closer to the input quaternion.
      */
     public Quaternion slerp(Quaternion input, float t) {
         // Calculate angle between them.
@@ -100,7 +100,6 @@ public class Quaternion {
     float hCos=1, hSin=0; // sin & cos used to rotate measured heading back by baseline amount
     float headingBaseline = 0; // baseline compass heading
     float inclinationBaseline = 0; // baseline inclination from horizontal
-    private final float sensitivity = 0.5f;
 
     private void setVectors() {
         px.x = 2*x*x -1 + 2*y*y;
@@ -116,12 +115,12 @@ public class Quaternion {
         float xeff = hCos*px.x - hSin*px.y;
         float yeff = hSin*px.x + hCos*px.y;
         float headingDelta = (float) Math.atan2(yeff, xeff);
-        float x = sensitivity * (float) Math.tan(Math.asin(pz.y) - inclinationBaseline);
+        float x = (float) Math.tan(Math.asin(pz.y) - inclinationBaseline);
         headingBaseline = (float) -Math.atan2(px.y,  px.x);
         hSin = (float) Math.sin(headingBaseline);
         hCos = (float) Math.cos(headingBaseline);
         inclinationBaseline= (float) Math.asin(pz.y);
-        float y = sensitivity * (float) Math.tan(headingDelta);
+        float y = (float) Math.tan(headingDelta);
         return Float.toString(x) + " " + Float.toString(y);
     }
 

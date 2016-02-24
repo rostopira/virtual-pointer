@@ -22,7 +22,7 @@ import android.widget.LinearLayout;
 
 public class MainActivity extends AppCompatActivity {
     SensorFusion sensorFusion;
-    final static int REQUEST_PERMS_CODE = 6957; //Random value
+    final static int REQUEST_PERMS_CODE = 169; //Random value in lower 8 bits
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

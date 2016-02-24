@@ -1,8 +1,12 @@
 package ua.rostopira.virtualpointer;
 
+import android.Manifest;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -18,6 +22,7 @@ import android.widget.LinearLayout;
 
 public class MainActivity extends AppCompatActivity {
     SensorFusion sensorFusion;
+    final static int REQUEST_PERMS_CODE = 6957; //Random value
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        //Create round gestures zone
+        //Create round button
         final ImageView mFrame = (ImageView) findViewById(R.id.tap_button);
         mFrame.post(new Runnable() {
             @Override
@@ -37,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
                 mFrame.postInvalidate();
             }
         });
-        //TODO: add gestures support
+        //Button touch reaction
         mFrame.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -56,12 +61,22 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        sensorFusion = new SensorFusion((SensorManager)getSystemService(SENSOR_SERVICE));
+        // Marshmallow permission system support
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS) +
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                new String[] {
+                    Manifest.permission.BODY_SENSORS,
+                    Manifest.permission.ACCESS_FINE_LOCATION //Do it really needed? TODO: test without location permission
+                },
+                REQUEST_PERMS_CODE);
+        } else
+            sensorFusion = new SensorFusion((SensorManager)getSystemService(SENSOR_SERVICE));
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         MenuInflater inflater = getMenuInflater();
         inflater.inflate( R.menu.menu_main, menu );
         return true;
@@ -69,15 +84,11 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_setip) {
             setIP();
-            sensorFusion.start();
+            sensorFusion.start(); //TODO: add normal START button. Big and red maybe
         }
 
         return super.onOptionsItemSelected(item);
@@ -101,6 +112,10 @@ public class MainActivity extends AppCompatActivity {
         Singleton.get().send("RA");
     }
 
+    /** This method creates dialog in which user can specify the IP address of device with
+     *  Virtual Pointer Server running.
+     *  TODO: Save that value to shared preferences
+     */
     public void setIP() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
         alertDialog.setTitle("Set server IP");
@@ -119,5 +134,15 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
         alertDialog.show();
+    }
+
+    //Marshmallow permissions support
+    @Override
+    public void onRequestPermissionsResult
+            (int requestCode, String permissions[], int[] grantResults) {
+        if ( (requestCode==REQUEST_PERMS_CODE) &&
+                (grantResults.length>0) &&
+                (grantResults[0]==PackageManager.PERMISSION_GRANTED) ) //TODO make sure both permissions granted
+            sensorFusion = new SensorFusion((SensorManager)getSystemService(SENSOR_SERVICE));
     }
 }

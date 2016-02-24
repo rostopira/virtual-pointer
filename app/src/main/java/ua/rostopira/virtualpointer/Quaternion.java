@@ -90,10 +90,13 @@ public class Quaternion {
     }
 
     /**
-     *
      *  MAGIC
      *  DO NOT TOUCH
      *
+     *  This code is stolen from Freescale sensor fusion demo.
+     *  And working pretty good.
+     *  Sometimes.
+     *  If the weather is fine.
      */
 
     Vector px = new Vector(1,0,0), pz = new Vector(1,0,0);
@@ -124,6 +127,12 @@ public class Quaternion {
         return Float.toString(x) + " " + Float.toString(y);
     }
 
+    /**
+     * But this don't working actually.
+     * Crap.
+     * I don't know why.
+     * TODO: understand that stolen piece of shit.
+     */
     public void center() {
         setVectors();
         headingBaseline = (float) -Math.atan2(px.y,  px.x);

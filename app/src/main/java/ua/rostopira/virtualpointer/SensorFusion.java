@@ -121,19 +121,16 @@ public class SensorFusion implements SensorEventListener {
         rotationVector = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
     }
 
+    private static final int SENSOR_DELAY = 30000; //in miliseconds
+
     public void start() {
-        sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_UI);
-        sensorManager.registerListener(this, rotationVector, SensorManager.SENSOR_DELAY_UI);
+        sensorManager.registerListener(this, gyroscope, SENSOR_DELAY);
+        sensorManager.registerListener(this, rotationVector, SENSOR_DELAY);
     }
 
     public void stop() {
         sensorManager.unregisterListener(this, gyroscope);
         sensorManager.unregisterListener(this, rotationVector);
-    }
-
-    public void setCenter() {
-        quaternionGyroscope.center();
-        quaternionRotationVector.center();
     }
 
     @Override
@@ -161,6 +158,7 @@ public class SensorFusion implements SensorEventListener {
             // Process Gyroscope and perform fusion
             // This timestep's delta rotation to be multiplied by the current rotation
             // after computing it from the gyro sample data.
+            //String result = null;
             if (timestamp != 0) {
                 final float dT = (event.timestamp - timestamp) * NS2S;
                 // Axis of the rotation sample, not normalized yet.
@@ -204,19 +202,15 @@ public class SensorFusion implements SensorEventListener {
                         panicCounter++;
                     }
                     // Directly use Gyro
-                    Singleton.get().setOrientation(quaternionGyroscope);
+                    //result = quaternionGyroscope.getXY();
                 } else {
                     // Both are nearly saying the same. Perform normal fusion.
                     // Interpolate with a fixed weight between the two absolute quaternions obtained
                     // from gyro and rotation vector sensors. The weight should be quite low, so the
                     // rotation vector corrects the gyro only slowly, and the output keeps responsive.
-                    Quaternion interpolate = quaternionGyroscope.slerp(quaternionRotationVector,
+                    quaternionGyroscope = quaternionGyroscope.slerp(quaternionRotationVector,
                             (float) (INDIRECT_INTERPOLATION_WEIGHT * gyroscopeRotationVelocity));
-
-                    // Use the interpolated value between gyro and rotationVector
-                    Singleton.get().setOrientation(interpolate);
-                    // Override current gyroscope-orientation
-                    quaternionGyroscope = interpolate.clone();
+                    //result = quaternionGyroscope.getXY();
                     // Reset the panic counter because both sensors are saying the same again
                     panicCounter = 0;
                 }
@@ -226,7 +220,7 @@ public class SensorFusion implements SensorEventListener {
                     if (gyroscopeRotationVelocity < 3) {
                         Log.d("Rotation Vector", "Panic reset");
                         // Manually set position to whatever rotation vector says.
-                        Singleton.get().setOrientation(quaternionRotationVector);
+                        //result = quaternionRotationVector.getXY();
                         // Override current gyroscope-orientation with corrected value
                         quaternionGyroscope = quaternionRotationVector.clone();
                         panicCounter = 0;
@@ -234,6 +228,7 @@ public class SensorFusion implements SensorEventListener {
                 }
             }
             timestamp = event.timestamp;
+            S.get().send("M",deltaQuaternion.getXY());
         }
     }
 }

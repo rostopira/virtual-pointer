@@ -1,32 +1,29 @@
 package ua.rostopira.virtualpointer;
 
-import android.os.SystemClock;
 import android.util.Log;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-final public class Singleton {
-    private static Singleton instance;
+/**
+ * Singleton
+ */
+final public class S {
+    private static S instance;
     private InetAddress IP;
 
-    private Singleton() {
+    private S() {
         instance = this;
-        setIP("192.168.1.2");
+        setIP("192.168.1.69");
     }
 
-    public static Singleton get() {
+    public static S get() {
         if (instance == null) {
-            synchronized (Singleton.class) {
+            synchronized (S.class) {
                 if (instance == null)
-                    new Singleton();
+                    new S();
             }
         }
         return instance;
-    }
-
-    public void setOrientation(Quaternion q) {
-        send("M", q.getXY(), Long.toString(SystemClock.uptimeMillis()));
     }
 
     public boolean setIP(String ip) {
@@ -36,7 +33,7 @@ final public class Singleton {
             return true;
         } catch (UnknownHostException e) {
             IP = temp;
-            Log.e("Singleton", "Unknown host exception");
+            Log.e("S", "Unknown host exception");
             return false;
         }
     }

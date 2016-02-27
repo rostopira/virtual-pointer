@@ -9,6 +9,7 @@ package ua.rostopira.virtualpointer;
 
 public class Quaternion {
     public float x,y,z,w;
+    static final float pi4 = (float) (Math.PI/4);
 
     public Quaternion () {
         x = 0;
@@ -27,6 +28,7 @@ public class Quaternion {
     public Quaternion clone() {
         return new Quaternion(x,y,z,w);
     }
+
     public Quaternion minus() {
         return new Quaternion(-x,-y,-z,-w);
     }
@@ -38,15 +40,6 @@ public class Quaternion {
         o.y = (w * i.y) + (y * i.w) + (z * i.x) - (x * i.z);
         o.z = (w * i.z) + (z * i.w) + (x * i.y) - (y * i.x);
         return o;
-    }
-
-    public Quaternion substract(Quaternion i) {
-        float X,Y,Z,W;
-        X = x - i.x;
-        Y = y - i.y;
-        Z = z - i.z;
-        W = w - i.w;
-        return new Quaternion(X,Y,Z,W);
     }
 
     public float dotProduct(Quaternion i) {
@@ -89,56 +82,10 @@ public class Quaternion {
         return new Quaternion(X,Y,Z,W);
     }
 
-    /**
-     *  MAGIC
-     *  DO NOT TOUCH
-     *
-     *  This code is stolen from Freescale sensor fusion demo.
-     *  And working pretty good.
-     *  Sometimes.
-     *  If the weather is fine.
-     */
-
-    Vector px = new Vector(1,0,0), pz = new Vector(1,0,0);
-    float hCos=1, hSin=0; // sin & cos used to rotate measured heading back by baseline amount
-    float headingBaseline = 0; // baseline compass heading
-    float inclinationBaseline = 0; // baseline inclination from horizontal
-
-    private void setVectors() {
-        px.x = 2*x*x -1 + 2*y*y;
-        px.y = 2*y*z -2*x*w;
-        px.z = 2*y*w + 2*x*z;
-        pz.x = 2*y*w - 2*x*z;
-        pz.y = 2*z*w + 2*x*y;
-        pz.z = 2*x*x - 1 + 2*w*w;
-    }
-
     public String getXY() {
-        setVectors();
-        float xeff = hCos*px.x - hSin*px.y;
-        float yeff = hSin*px.x + hCos*px.y;
-        float headingDelta = (float) Math.atan2(yeff, xeff);
-        float x = (float) Math.tan(Math.asin(pz.y) - inclinationBaseline);
-        headingBaseline = (float) -Math.atan2(px.y,  px.x);
-        hSin = (float) Math.sin(headingBaseline);
-        hCos = (float) Math.cos(headingBaseline);
-        inclinationBaseline= (float) Math.asin(pz.y);
-        float y = (float) Math.tan(headingDelta);
-        return Float.toString(x) + " " + Float.toString(y);
-    }
-
-    /**
-     * But this don't working actually.
-     * Crap.
-     * I don't know why.
-     * TODO: understand that stolen piece of shit.
-     */
-    public void center() {
-        setVectors();
-        headingBaseline = (float) -Math.atan2(px.y,  px.x);
-        hSin = (float) Math.sin(headingBaseline);
-        hCos = (float) Math.cos(headingBaseline);
-        inclinationBaseline= (float) Math.asin(pz.y);
+        float yaw = (float) Math.asin(2*x*y + 2*z*w);
+        float pitch = (float) Math.atan2(2*x*w -2*y*z, 1 -2*x*x -2*z*z);
+        return Float.toString(yaw) + " " + Float.toString(pitch);
     }
 
 }

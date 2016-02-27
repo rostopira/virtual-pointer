@@ -1,12 +1,8 @@
 package ua.rostopira.virtualpointer;
 
-import android.Manifest;
 import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -22,7 +18,6 @@ import android.widget.LinearLayout;
 
 public class MainActivity extends AppCompatActivity {
     SensorFusion sensorFusion;
-    final static int REQUEST_PERMS_CODE = 169; //Random value in lower 8 bits
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,29 +45,21 @@ public class MainActivity extends AppCompatActivity {
                     case MotionEvent.ACTION_DOWN:
                     case MotionEvent.ACTION_POINTER_DOWN:
                         mFrame.setImageResource(R.drawable.pressed_btn);
-                            Singleton.get().send("T");
+                        S.get().send("T");
                         return true;
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_POINTER_UP:
                         mFrame.setImageResource(R.drawable.tap_btn);
+                        S.get().send("R");
                         return true;
                 }
                 return false;
             }
         });
 
-        // Marshmallow permission system support
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS) +
-                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                new String[] {
-                    Manifest.permission.BODY_SENSORS,
-                    Manifest.permission.ACCESS_FINE_LOCATION //Do it really needed? TODO: test without location permission
-                },
-                REQUEST_PERMS_CODE);
-        } else
-            sensorFusion = new SensorFusion((SensorManager)getSystemService(SENSOR_SERVICE));
+        //TODO: server autodetection
+        sensorFusion = new SensorFusion((SensorManager)getSystemService(SENSOR_SERVICE));
+        sensorFusion.start();
     }
 
     @Override
@@ -95,21 +82,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void rightClick(View view) {
-        Singleton.get().send("L");
+        S.get().send("L");
     }
 
-    public void center(View view) { sensorFusion.setCenter(); }
+    public void center(View view) {
+        S.get().send("C");
+    }
 
     public void back(View view) {
-        Singleton.get().send("B");
+        S.get().send("B");
     }
 
     public void home(View view) {
-        Singleton.get().send("H");
+        S.get().send("H");
     }
 
     public void recent(View view) {
-        Singleton.get().send("RA");
+        S.get().send("A");
     }
 
     /** This method creates dialog in which user can specify the IP address of device with
@@ -130,19 +119,10 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.setPositiveButton("OK",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        Singleton.get().setIP(input.getText().toString());
+                        S.get().setIP(input.getText().toString());
                     }
                 });
         alertDialog.show();
     }
 
-    //Marshmallow permissions support
-    @Override
-    public void onRequestPermissionsResult
-            (int requestCode, String permissions[], int[] grantResults) {
-        if ( (requestCode==REQUEST_PERMS_CODE) &&
-                (grantResults.length>0) &&
-                (grantResults[0]==PackageManager.PERMISSION_GRANTED) ) //TODO make sure both permissions granted
-            sensorFusion = new SensorFusion((SensorManager)getSystemService(SENSOR_SERVICE));
-    }
 }

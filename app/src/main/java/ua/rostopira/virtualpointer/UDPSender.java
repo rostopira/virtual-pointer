@@ -11,7 +11,6 @@ import java.net.InetAddress;
  * defined as constructor parameter;
  */
 public class UDPSender extends AsyncTask<String, Void, Void> {
-    public static final int port = 6969;
     InetAddress IP;
 
     public UDPSender(InetAddress ip) {
@@ -28,7 +27,7 @@ public class UDPSender extends AsyncTask<String, Void, Void> {
         byte[] bytes = t.getBytes();
         try { //TODO: make this to work as conveyor to reduce RAM usage and GC work
             DatagramSocket socket = new DatagramSocket();
-            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, IP, port);
+            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, IP, S.port);
             socket.send(packet);
             Log.d("UDPSender", t);
             socket.close();

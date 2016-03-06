@@ -24,68 +24,75 @@
         android:layout_marginBottom="64dp"
         android:src="@drawable/tap_btn"
         android:layout_gravity="center_horizontal"
-        android:id="@+id/tap_button"/>
+        android:id="@+id/tap_button"
+        android:onClick="onBtnClick" />
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fab2"
-            android:layout_gravity="top|left"
-            android:src="@drawable/ic_center_focus_strong_white_24dp"
-            android:onClick="center"
-            android:layout_weight="1"
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/center_btn"
+        android:layout_gravity="top|left"
+        android:src="@drawable/ic_center_focus_strong_white_24dp"
+        android:onClick="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/fab_margin"
+        android:layout_marginTop="72dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/status_text"
+        android:layout_gravity="center_horizontal|top"
+        android:layout_marginTop="92dp"
+        android:text="<=CENTER            SENSORS=>"
+        android:textColor="@color/colorIcons"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:layout_gravity="bottom"
+        android:layout_weight="3"
+        android:layout_marginRight="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginBottom="20dp">
+
+        <ImageButton
+            android:id="@+id/back_btn"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/fab_margin"
-            android:layout_marginTop="72dp"/>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:orientation="horizontal"
-            android:layout_gravity="bottom"
-            android:layout_weight="3"
-            android:layout_marginRight="16dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginBottom="20dp">
-
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@color/colorAccent"
-                android:src="@drawable/ic_sysbar_back"
-                android:onClick="back" />
-
-
-
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@color/colorAccent"
-                android:src="@drawable/ic_sysbar_home"
-                android:onClick="home" />
-
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@color/colorAccent"
-                android:src="@drawable/ic_sysbar_recent"
-                android:nestedScrollingEnabled="false"
-                android:onClick="recent" />
-
-
-        </LinearLayout>
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fab"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_gravity="top|right"
-            android:src="@drawable/ic_mouse_right_btn_white_24dp"
-            android:onClick="rightClick"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:layout_marginRight="@dimen/fab_margin"
-            android:layout_marginTop="72dp"/>
+            android:background="@color/colorAccent"
+            android:src="@drawable/ic_sysbar_back"
+            android:onClick="back" />
+
+        <ImageButton
+            android:id="@+id/home_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/colorAccent"
+            android:src="@drawable/ic_sysbar_home"
+            android:onClick="home" />
+
+        <ImageButton
+            android:id="@+id/recent_apps_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/colorAccent"
+            android:src="@drawable/ic_sysbar_recent"
+            android:onClick="recent" />
+
+    </LinearLayout>
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|right"
+        android:layout_marginTop="86dp"
+        android:layout_marginRight="16dp"
+        android:id="@+id/toggle"
+        android:checked="false" />
 
 </android.support.design.widget.CoordinatorLayout>

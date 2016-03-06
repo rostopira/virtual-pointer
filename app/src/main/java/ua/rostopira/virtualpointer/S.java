@@ -9,7 +9,8 @@ import java.net.UnknownHostException;
  */
 final public class S {
     private static S instance;
-    private InetAddress IP;
+    public InetAddress IP;
+    public static final int port = 6969;
 
     private S() {
         instance = this;
@@ -41,5 +42,9 @@ final public class S {
     public void send(String... strings) {
         UDPSender sender = new UDPSender(IP);
         sender.execute(strings);
+    }
+
+    public void sendKey(int keyCode) {
+        send("K", String.valueOf(keyCode));
     }
 }

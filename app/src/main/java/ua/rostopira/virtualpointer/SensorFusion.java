@@ -90,10 +90,12 @@ public class SensorFusion implements SensorEventListener {
 
     //TODO: add to settings
     private static final int SENSOR_DELAY = 30000; //in microseconds
+    private UDPSender sender;
 
     public void start() {
         sensorManager.registerListener(this, gyroscope, SENSOR_DELAY);
         sensorManager.registerListener(this, rotationVector, SENSOR_DELAY);
+        sender = new UDPSender(S.get().IP);
     }
 
     public void stop() {
@@ -180,7 +182,7 @@ public class SensorFusion implements SensorEventListener {
                 }
             }
             timestamp = event.timestamp;
-            S.get().send("M",deltaQuaternion.getXY());
+            sender.execute("M",deltaQuaternion.getXY());
         }
     }
 }

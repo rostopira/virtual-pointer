@@ -23,13 +23,4 @@ final public class S {
         }
         return instance;
     }
-
-    public void send(String... strings) {
-        UDPSender sender = new UDPSender(IP);
-        sender.execute(strings);
-    }
-
-    public void sendKey(int keyCode) {
-        send("K", String.valueOf(keyCode));
-    }
 }

@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
     private SensorFusion sensorFusion;
+    private UDPSender sender;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         btn.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                S.get().send("L");
+                sender.execute("L");
                 return true;
             }
         });
@@ -77,13 +78,14 @@ public class MainActivity extends AppCompatActivity {
                     broadcast.execute((Void) null);
                     tv.setText("Searching server...");
                     try {
-                        S.get().IP = scanner.get();
-                        broadcast.cancel(false);
+                        S.get().IP = scanner.get(); //Wait for server discovery
+                        broadcast.cancel(false); //Server found, stop broadcast
                         if (S.get().IP==null)
                             throw new NullPointerException();
                         else {
                             tv.setText("Server " + S.get().IP.getHostAddress());
                             sensorFusion.start();
+                            sender = new UDPSender(S.get().IP);
                         }
                     } catch (Exception e) {
                         Log.e("MainActivity", "Failed to find a server");
@@ -93,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     tv.setText("Service is OFF");
                     sensorFusion.stop();
+                    sender = null;
                 }
             }
         });
@@ -118,19 +121,19 @@ public class MainActivity extends AppCompatActivity {
     public void onBtnClick(View view) {
         switch (view.getId()) {
             case R.id.back_btn:
-                S.get().sendKey(KeyEvent.KEYCODE_BACK);
+                sender.execute("K", String.valueOf(KeyEvent.KEYCODE_BACK));
                 return;
             case R.id.home_btn:
-                S.get().sendKey(KeyEvent.KEYCODE_HOME);
+                sender.execute("K", String.valueOf(KeyEvent.KEYCODE_HOME));
                 return;
             case R.id.recent_apps_btn:
-                S.get().sendKey(KeyEvent.KEYCODE_APP_SWITCH);
+                sender.execute("K", String.valueOf(KeyEvent.KEYCODE_APP_SWITCH));
                 return;
             case R.id.center_btn:
-                S.get().send("C");
+                sender.execute("C");
                 return;
             case R.id.tap_button:
-                S.get().send("T");
+                sender.execute("T");
                 return;
         }
     }

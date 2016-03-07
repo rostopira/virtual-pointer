@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 TextView tv = (TextView) findViewById(R.id.status_text);
                 if (isChecked) {
+                    //Find server
                     UDPScanner scanner = new UDPScanner();
                     scanner.execute((Void) null);
                     UDPBroadcast broadcast = new UDPBroadcast();
@@ -81,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
                         if (S.get().IP==null)
                             throw new NullPointerException();
                         else {
-                            tv.setText("Found server on " + S.get().IP.getHostAddress());
+                            tv.setText("Server " + S.get().IP.getHostAddress());
                             sensorFusion.start();
                         }
                     } catch (Exception e) {

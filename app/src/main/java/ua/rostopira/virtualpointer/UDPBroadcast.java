@@ -27,21 +27,23 @@ public class UDPBroadcast extends AsyncTask<Void, Void, InetAddress> {
     public void onPreExecute() {
         try {
             //Need to check all network interfaces, Set-Top-Boxes usually have Ethernet and Wi-Fi
-            for (Enumeration en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
-                NetworkInterface intf = (NetworkInterface) en.nextElement();
-                for (Enumeration enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
-                    InetAddress inetAddress = (InetAddress) enumIpAddr.nextElement();
-                    if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {
+            Enumeration networkInterfaceEnum = NetworkInterface.getNetworkInterfaces();
+            do {
+                NetworkInterface networkInterface = (NetworkInterface) networkInterfaceEnum.nextElement();
+                Enumeration IPEnum = networkInterface.getInetAddresses();
+                do {
+                    InetAddress IP = (InetAddress) IPEnum.nextElement();
+                    if (!IP.isLoopbackAddress() && IP instanceof Inet4Address) {
                         //Broadcast address = (ip & mask) | ~mask
                         //But for local networks (class C) subnet mask is always 255.255.255.0
-                        byte [] ip = inetAddress.getAddress();
+                        byte [] ip = IP.getAddress();
                         //So we need just to replace last byte with 255 or -128
                         ip[3] = -128;
                         broadcastAddress = InetAddress.getByAddress(ip);
                         return;
                     }
-                }
-            }
+                } while (IPEnum.hasMoreElements());
+            } while (networkInterfaceEnum.hasMoreElements());
         } catch (UnknownHostException e) {
             Log.e("UDPBroadcast", "Unknown host exception");
         } catch (SocketException e) {

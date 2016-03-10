@@ -6,7 +6,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
 /**
- * This task gets Strings, merge them into one with ' ' as splitter and send them to server
+ * This task gets Strings, merge them into one with ' ' as splitter and send to server
  */
 public class UDPSender extends AsyncTask<String, Void, Void> {
     @Override

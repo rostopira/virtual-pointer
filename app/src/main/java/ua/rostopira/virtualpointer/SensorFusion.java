@@ -95,7 +95,7 @@ public class SensorFusion implements SensorEventListener {
     public void start() {
         sensorManager.registerListener(this, gyroscope, SENSOR_DELAY);
         sensorManager.registerListener(this, rotationVector, SENSOR_DELAY);
-        sender = new UDPSender(S.get().IP);
+        sender = new UDPSender();
     }
 
     public void stop() {

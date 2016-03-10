@@ -43,7 +43,7 @@
         android:id="@+id/status_text"
         android:layout_gravity="center_horizontal|top"
         android:layout_marginTop="92dp"
-        android:text="<=CENTER            SENSORS=>"
+        android:text="Press to start"
         android:textColor="@color/colorIcons"
         android:textStyle="bold" />
 

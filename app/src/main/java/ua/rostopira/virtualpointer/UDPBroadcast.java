@@ -2,41 +2,36 @@ package ua.rostopira.virtualpointer;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.TextView;
+
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 
 /**
- * Broadcasts in local network
+ * Broadcasts in local network, finds server, saves his IP
  */
-public class UDPBroadcast extends AsyncTask<Void, Void, Void> {
-    private byte[] localIP;
+public class UDPBroadcast extends AsyncTask<Void, Void, InetAddress> {
+    private InetAddress broadcastAddress;
+    private TextView indicator;
 
-    @Override
-    public Void doInBackground(Void... v) {
-        try {
-            DatagramSocket socket = new DatagramSocket();
-            DatagramPacket packet = new DatagramPacket("B".getBytes(),"B".getBytes().length);
-            packet.setPort(S.port);
-            for (byte i = 0; i<256; i++) { //send broadcast to all 192.168.XXX.i
-                if (isCancelled()) //Broadcast canceled - got answer from server
-                    return null;
-                localIP[3] = i;
-                packet.setAddress(InetAddress.getByAddress(localIP));
-                socket.send(packet);
-            }
-        } catch (Exception e) {}
-        return null;
+    public UDPBroadcast(TextView textView) {
+        indicator = textView;
     }
 
     /**
-     * Get localIP
+     * Detect broadcast address
+     * Class B networks unsupported
      */
-    public UDPBroadcast() {
+    @Override
+    public void onPreExecute() {
+        indicator.setText("Searching for server...");
         try {
             //Need to check all network interfaces, Set-Top-Boxes usually have Ethernet and Wi-Fi
             for (Enumeration en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
@@ -44,13 +39,64 @@ public class UDPBroadcast extends AsyncTask<Void, Void, Void> {
                 for (Enumeration enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
                     InetAddress inetAddress = (InetAddress) enumIpAddr.nextElement();
                     if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {
-                        localIP = inetAddress.getAddress();
+                        //Broadcast address = (ip & mask) | ~mask
+                        //But for local networks (class C) subnet mask is always 255.255.255.0
+                        byte [] ip = inetAddress.getAddress();
+                        //So we need just to replace last byte with 255 or -128
+                        ip[3] = -128;
+                        broadcastAddress = InetAddress.getByAddress(ip);
                         return;
                     }
                 }
             }
-        } catch (SocketException ex) {
-            Log.e("Socket exception", ex.toString());
+        } catch (UnknownHostException e) {
+            Log.e("UDPBroadcast", "Unknown host exception");
+        } catch (SocketException e) {
+            Log.e("UDPBroadcast", "Socket exception");
         }
+    }
+
+    /**
+     * Broadcast and listen to answer
+     * @return InetAddress of server
+     */
+    @Override
+    public InetAddress doInBackground(Void... voids) {
+        try {
+            //Send Broadcast
+            DatagramSocket socket = new DatagramSocket(S.port);
+            socket.setBroadcast(true);
+            DatagramPacket packet = new DatagramPacket(
+                    "B".getBytes(),
+                    "B".length(),
+                    broadcastAddress,
+                    S.port
+            );
+            socket.send(packet);
+
+            //Receive answer
+            byte[] buffer = new byte[11];
+            packet = new DatagramPacket(buffer, buffer.length);
+            socket.receive(packet);
+            socket.close(); //Always close sockets, be a good boy
+            return packet.getAddress();
+        } catch (SocketException e) {
+            Log.e("UDPBroadcast", "Socket exception");
+        } catch (IOException e) {
+            Log.e("UDPBroadcast", "I/O exception");
+        }
+        return null;
+    }
+
+    /**
+     * Display and save result
+     */
+    @Override
+    public void onPostExecute(InetAddress IP) {
+        if (IP == null)
+            indicator.setText("Find server failed");
+        else
+            indicator.setText("Server " + IP.getHostAddress());
+        S.get().IP = IP;
     }
 }

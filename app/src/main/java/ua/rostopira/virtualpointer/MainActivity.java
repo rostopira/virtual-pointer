@@ -16,7 +16,6 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
     private SensorFusion sensorFusion;
@@ -69,38 +68,26 @@ public class MainActivity extends AppCompatActivity {
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                TextView tv = (TextView) findViewById(R.id.status_text);
                 if (isChecked) {
-                    //Find server
-                    UDPScanner scanner = new UDPScanner();
-                    scanner.execute((Void) null);
-                    UDPBroadcast broadcast = new UDPBroadcast();
-                    broadcast.execute((Void) null);
-                    tv.setText("Searching server...");
+                    UDPBroadcast broadcast = new UDPBroadcast((TextView)findViewById(R.id.status_text));
+                    broadcast.execute((Void)null);
                     try {
-                        S.get().IP = scanner.get(); //Wait for server discovery
-                        broadcast.cancel(false); //Server found, stop broadcast
-                        if (S.get().IP==null)
-                            throw new NullPointerException();
-                        else {
-                            tv.setText("Server " + S.get().IP.getHostAddress());
+                        if (broadcast.get() == null) //TODO: add timeout
+                            buttonView.setChecked(false);
+                        else
                             sensorFusion.start();
-                            sender = new UDPSender(S.get().IP);
-                        }
                     } catch (Exception e) {
-                        Log.e("MainActivity", "Failed to find a server");
-                        Toast.makeText(getBaseContext(), "Failed to find server", Toast.LENGTH_LONG).show();
-                        buttonView.setChecked(false);
+                        Log.e("MainActivity", "Broadcast error");
                     }
                 } else {
-                    tv.setText("Service is OFF");
+                    ((TextView)findViewById(R.id.status_text)).setText("Service is OFF");
                     sensorFusion.stop();
-                    sender = null;
                 }
             }
         });
 
         sensorFusion = new SensorFusion((SensorManager)getSystemService(SENSOR_SERVICE));
+        sender = new UDPSender();
     }
 
     @Override

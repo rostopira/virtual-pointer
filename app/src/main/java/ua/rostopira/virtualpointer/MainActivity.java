@@ -125,4 +125,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Use volume keys to change volume on server
+     */
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        switch (event.getKeyCode()) {
+            case KeyEvent.KEYCODE_VOLUME_UP:
+                if (event.getAction() == KeyEvent.ACTION_DOWN)
+                    sender.execute("K", String.valueOf(KeyEvent.KEYCODE_VOLUME_UP));
+                return true;
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+                if (event.getAction() == KeyEvent.ACTION_DOWN)
+                    sender.execute("K", String.valueOf(KeyEvent.KEYCODE_VOLUME_UP));
+                return true;
+            default:
+                return super.dispatchKeyEvent(event);
+        }
+    }
 }

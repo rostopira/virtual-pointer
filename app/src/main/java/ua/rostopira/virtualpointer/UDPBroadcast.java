@@ -2,7 +2,6 @@ package ua.rostopira.virtualpointer;
 
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.TextView;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -19,11 +18,6 @@ import java.util.Enumeration;
  */
 public class UDPBroadcast extends AsyncTask<Void, Void, InetAddress> {
     private InetAddress broadcastAddress;
-    private TextView indicator;
-
-    public UDPBroadcast(TextView textView) {
-        indicator = textView;
-    }
 
     /**
      * Detect broadcast address
@@ -31,7 +25,6 @@ public class UDPBroadcast extends AsyncTask<Void, Void, InetAddress> {
      */
     @Override
     public void onPreExecute() {
-        indicator.setText("Searching for server...");
         try {
             //Need to check all network interfaces, Set-Top-Boxes usually have Ethernet and Wi-Fi
             for (Enumeration en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
@@ -89,14 +82,10 @@ public class UDPBroadcast extends AsyncTask<Void, Void, InetAddress> {
     }
 
     /**
-     * Display and save result
+     * Save result
      */
     @Override
     public void onPostExecute(InetAddress IP) {
-        if (IP == null)
-            indicator.setText("Find server failed");
-        else
-            indicator.setText("Server " + IP.getHostAddress());
         S.get().IP = IP;
     }
 }

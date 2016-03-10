@@ -68,19 +68,24 @@ public class MainActivity extends AppCompatActivity {
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    UDPBroadcast broadcast = new UDPBroadcast((TextView)findViewById(R.id.status_text));
+                TextView tv = (TextView) findViewById(R.id.status_text);
+                if (isChecked) { //TODO: change switch colors
+                    tv.setText("Searching server...");
+                    UDPBroadcast broadcast = new UDPBroadcast();
                     broadcast.execute((Void)null);
                     try {
-                        if (broadcast.get() == null) //TODO: add timeout
+                        if (broadcast.get() == null) { //TODO: add timeout
+                            tv.setText("Failed");
                             buttonView.setChecked(false);
-                        else
+                        } else {
+                            tv.setText("Server " + S.get().IP.getHostAddress());
                             sensorFusion.start();
+                        }
                     } catch (Exception e) {
                         Log.e("MainActivity", "Broadcast error");
                     }
                 } else {
-                    ((TextView)findViewById(R.id.status_text)).setText("Service is OFF");
+                    tv.setText("Service is OFF");
                     sensorFusion.stop();
                 }
             }

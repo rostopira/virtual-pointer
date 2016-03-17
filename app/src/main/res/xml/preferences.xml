@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <ua.rostopira.virtualpointer.SeekBarPreference
+        android:key="pref_dick"
+        android:title="dick"
+        android:defaultValue="12"
+        android:summary="don't bite the dick"/>
+</PreferenceScreen>

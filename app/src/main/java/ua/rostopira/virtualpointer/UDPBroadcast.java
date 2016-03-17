@@ -22,7 +22,7 @@ public class UDPBroadcast extends AsyncTask<Void, Void, InetAddress> {
     /**
      * Detect broadcast address
      * Class B networks unsupported, because Android API sucks
-     * But who cares? Anybody uses class B network at home?
+     * But who cares? Who uses class B network at home?
      */
     @Override
     public void onPreExecute() {

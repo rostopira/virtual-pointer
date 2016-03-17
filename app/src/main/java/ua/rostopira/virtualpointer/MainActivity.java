@@ -17,6 +17,8 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import java.util.concurrent.TimeUnit;
+
 public class MainActivity extends AppCompatActivity {
     private SensorFusion sensorFusion;
     private UDPSender sender;
@@ -64,17 +66,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //On/off toggle
         Switch toggle = (Switch) findViewById(R.id.toggle);
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 TextView tv = (TextView) findViewById(R.id.status_text);
-                if (isChecked) { //TODO: change switch colors
-                    tv.setText("Searching server...");
+                if (isChecked) {
                     UDPBroadcast broadcast = new UDPBroadcast();
                     broadcast.execute((Void)null);
                     try {
-                        if (broadcast.get() == null) { //TODO: add timeout
+                        if (broadcast.get(2, TimeUnit.SECONDS) == null) {
                             tv.setText("Failed");
                             buttonView.setChecked(false);
                         } else {
@@ -93,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
 
         sensorFusion = new SensorFusion((SensorManager)getSystemService(SENSOR_SERVICE));
         sender = new UDPSender();
+        toggle.toggle();
     }
 
     @Override
@@ -114,19 +117,19 @@ public class MainActivity extends AppCompatActivity {
         switch (view.getId()) {
             case R.id.back_btn:
                 sender.execute("K", String.valueOf(KeyEvent.KEYCODE_BACK));
-                return;
+                break;
             case R.id.home_btn:
                 sender.execute("K", String.valueOf(KeyEvent.KEYCODE_HOME));
-                return;
+                break;
             case R.id.recent_apps_btn:
                 sender.execute("K", String.valueOf(KeyEvent.KEYCODE_APP_SWITCH));
-                return;
+                break;
             case R.id.center_btn:
                 sender.execute("C");
-                return;
+                break;
             case R.id.tap_button:
                 sender.execute("T");
-                return;
+                break;
         }
     }
 
@@ -142,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case KeyEvent.KEYCODE_VOLUME_DOWN:
                 if (event.getAction() == KeyEvent.ACTION_DOWN)
-                    sender.execute("K", String.valueOf(KeyEvent.KEYCODE_VOLUME_UP));
+                    sender.execute("K", String.valueOf(KeyEvent.KEYCODE_VOLUME_DOWN));
                 return true;
             default:
                 return super.dispatchKeyEvent(event);

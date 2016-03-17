@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
                             tv.setText("Failed");
                             buttonView.setChecked(false);
                         } else {
-                            tv.setText("Server " + S.get().IP.getHostAddress());
+                            tv.setText("Server " + broadcast.get().getHostAddress());
                             sensorFusion.start();
                         }
                     } catch (Exception e) {

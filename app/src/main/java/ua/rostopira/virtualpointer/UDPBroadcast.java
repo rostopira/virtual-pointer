@@ -21,7 +21,8 @@ public class UDPBroadcast extends AsyncTask<Void, Void, InetAddress> {
 
     /**
      * Detect broadcast address
-     * Class B networks unsupported
+     * Class B networks unsupported, because Android API sucks
+     * But who cares? Anybody uses class B network at home?
      */
     @Override
     public void onPreExecute() {
@@ -30,19 +31,20 @@ public class UDPBroadcast extends AsyncTask<Void, Void, InetAddress> {
             Enumeration networkInterfaceEnum = NetworkInterface.getNetworkInterfaces();
             do {
                 NetworkInterface networkInterface = (NetworkInterface) networkInterfaceEnum.nextElement();
+                //And all IPs in each network interface
                 Enumeration IPEnum = networkInterface.getInetAddresses();
-                do {
+                while (IPEnum.hasMoreElements()) {
                     InetAddress IP = (InetAddress) IPEnum.nextElement();
                     if (!IP.isLoopbackAddress() && IP instanceof Inet4Address) {
                         //Broadcast address = (ip & mask) | ~mask
                         //But for local networks (class C) subnet mask is always 255.255.255.0
                         byte [] ip = IP.getAddress();
-                        //So we need just to replace last byte with 255 or -128
-                        ip[3] = -128;
+                        //So we need just to replace last byte with 255
+                        ip[3] = (byte) 255;
                         broadcastAddress = InetAddress.getByAddress(ip);
                         return;
                     }
-                } while (IPEnum.hasMoreElements());
+                }
             } while (networkInterfaceEnum.hasMoreElements());
         } catch (UnknownHostException e) {
             Log.e("UDPBroadcast", "Unknown host exception");
@@ -57,6 +59,7 @@ public class UDPBroadcast extends AsyncTask<Void, Void, InetAddress> {
      */
     @Override
     public InetAddress doInBackground(Void... voids) {
+        InetAddress temp = null;
         try {
             //Send Broadcast
             DatagramSocket socket = new DatagramSocket(S.port);
@@ -72,20 +75,18 @@ public class UDPBroadcast extends AsyncTask<Void, Void, InetAddress> {
             //Receive answer
             byte[] buffer = new byte[11];
             packet = new DatagramPacket(buffer, buffer.length);
-            socket.receive(packet);
-            socket.close(); //Always close sockets, be a good boy
-            return packet.getAddress();
+            socket.receive(packet); //Own broadcast. Nobody can't hide from broadcast :D
+            socket.receive(packet); //Response from server. Hopefully
+            temp = packet.getAddress();
+            socket.close();
         } catch (SocketException e) {
             Log.e("UDPBroadcast", "Socket exception");
         } catch (IOException e) {
             Log.e("UDPBroadcast", "I/O exception");
         }
-        return null;
+        return temp;
     }
 
-    /**
-     * Save result
-     */
     @Override
     public void onPostExecute(InetAddress IP) {
         S.get().IP = IP;

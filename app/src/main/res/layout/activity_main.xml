@@ -31,7 +31,7 @@
         android:id="@+id/center_btn"
         android:layout_gravity="top|left"
         android:src="@drawable/ic_center_focus_strong_white_24dp"
-        android:onClick="center"
+        android:onClick="onBtnClick"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/fab_margin"
@@ -64,7 +64,7 @@
             android:layout_weight="1"
             android:background="@color/colorAccent"
             android:src="@drawable/ic_sysbar_back"
-            android:onClick="back" />
+            android:onClick="onBtnClick" />
 
         <ImageButton
             android:id="@+id/home_btn"
@@ -73,7 +73,7 @@
             android:layout_weight="1"
             android:background="@color/colorAccent"
             android:src="@drawable/ic_sysbar_home"
-            android:onClick="home" />
+            android:onClick="onBtnClick" />
 
         <ImageButton
             android:id="@+id/recent_apps_btn"
@@ -82,7 +82,7 @@
             android:layout_weight="1"
             android:background="@color/colorAccent"
             android:src="@drawable/ic_sysbar_recent"
-            android:onClick="recent" />
+            android:onClick="onBtnClick" />
 
     </LinearLayout>
 

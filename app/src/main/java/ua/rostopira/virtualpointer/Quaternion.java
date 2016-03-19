@@ -82,10 +82,12 @@ public class Quaternion {
         return new Quaternion(X,Y,Z,W);
     }
 
-    public String getXY() {
-        float yaw = (float) Math.asin(2*x*y + 2*z*w);
-        float pitch = (float) Math.atan2(2*x*w -2*y*z, 1 -2*x*x -2*z*z);
-        return Float.toString(yaw) + " " + Float.toString(pitch);
+    public float yaw() {
+        return (float) Math.asin(2*x*y + 2*z*w);
+    }
+
+    public float pitch() {
+        return (float) Math.atan2(2*x*w -2*y*z, 1 -2*x*x -2*z*z);
     }
 
 }

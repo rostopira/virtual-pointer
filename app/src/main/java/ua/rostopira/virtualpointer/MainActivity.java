@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
     private SensorFusion sensorFusion;
-    private UDPSender sender;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         btn.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                sender.execute("L");
+                new UDPSender().execute("L");
                 return true;
             }
         });
@@ -94,8 +93,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         sensorFusion = new SensorFusion((SensorManager)getSystemService(SENSOR_SERVICE));
-        sender = new UDPSender();
-        toggle.toggle();
+        //toggle.toggle();
     }
 
     @Override
@@ -116,19 +114,19 @@ public class MainActivity extends AppCompatActivity {
     public void onBtnClick(View view) {
         switch (view.getId()) {
             case R.id.back_btn:
-                sender.execute("K", String.valueOf(KeyEvent.KEYCODE_BACK));
+                new UDPSender().execute("K", String.valueOf(KeyEvent.KEYCODE_BACK));
                 break;
             case R.id.home_btn:
-                sender.execute("K", String.valueOf(KeyEvent.KEYCODE_HOME));
+                new UDPSender().execute("K", String.valueOf(KeyEvent.KEYCODE_HOME));
                 break;
             case R.id.recent_apps_btn:
-                sender.execute("K", String.valueOf(KeyEvent.KEYCODE_APP_SWITCH));
+                new UDPSender().execute("K", String.valueOf(KeyEvent.KEYCODE_APP_SWITCH));
                 break;
             case R.id.center_btn:
-                sender.execute("C");
+                new UDPSender().execute("C");
                 break;
             case R.id.tap_button:
-                sender.execute("T");
+                new UDPSender().execute("T");
                 break;
         }
     }
@@ -141,11 +139,11 @@ public class MainActivity extends AppCompatActivity {
         switch (event.getKeyCode()) {
             case KeyEvent.KEYCODE_VOLUME_UP:
                 if (event.getAction() == KeyEvent.ACTION_DOWN)
-                    sender.execute("K", String.valueOf(KeyEvent.KEYCODE_VOLUME_UP));
+                    new UDPSender().execute("K", String.valueOf(KeyEvent.KEYCODE_VOLUME_UP));
                 return true;
             case KeyEvent.KEYCODE_VOLUME_DOWN:
                 if (event.getAction() == KeyEvent.ACTION_DOWN)
-                    sender.execute("K", String.valueOf(KeyEvent.KEYCODE_VOLUME_DOWN));
+                    new UDPSender().execute("K", String.valueOf(KeyEvent.KEYCODE_VOLUME_DOWN));
                 return true;
             default:
                 return super.dispatchKeyEvent(event);

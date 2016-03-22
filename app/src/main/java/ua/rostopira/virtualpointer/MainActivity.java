@@ -3,6 +3,7 @@ package ua.rostopira.virtualpointer;
 import android.content.Intent;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -22,6 +23,8 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
     private SensorFusion sensorFusion;
+    private boolean timerRunning = false;
+    private CountDownTimer longPressTimer;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,7 +44,17 @@ public class MainActivity extends AppCompatActivity {
                 btn.postInvalidate();
             }
         });
-        //Fill with white on touch
+
+        longPressTimer = new CountDownTimer(500, 500) {
+            @Override public void onTick(long millisUntilFinished) {}
+            @Override public void onFinish() {
+                btn.setImageResource(R.drawable.tap_btn);
+                btn.postInvalidate();
+                new UDPSender().execute("L");
+                timerRunning = false;
+            }
+        };
+        //Fill with white on touch and start/stop timer
         btn.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -49,20 +62,20 @@ public class MainActivity extends AppCompatActivity {
                     case MotionEvent.ACTION_DOWN:
                     case MotionEvent.ACTION_POINTER_DOWN:
                         btn.setImageResource(R.drawable.pressed_btn);
+                        longPressTimer.start();
+                        timerRunning = true;
                         return true;
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_POINTER_UP:
-                        btn.setImageResource(R.drawable.tap_btn);
+                        if (timerRunning) {
+                            longPressTimer.cancel();
+                            timerRunning = false;
+                            btn.setImageResource(R.drawable.tap_btn);
+                            new UDPSender().execute("T");
+                        }
                         return true;
                 }
                 return false;
-            }
-        });
-        btn.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                new UDPSender().execute("L");
-                return true;
             }
         });
 
@@ -126,9 +139,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.center_btn:
                 new UDPSender().execute("C");
-                break;
-            case R.id.tap_button:
-                new UDPSender().execute("T");
                 break;
         }
     }

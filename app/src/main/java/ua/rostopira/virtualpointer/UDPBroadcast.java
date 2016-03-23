@@ -15,50 +15,15 @@ import java.util.Enumeration;
 
 /**
  * Broadcasts in local network, finds server, saves his IP
+ * @params Broadcast address (like "192.168.0.255")
  */
-public class UDPBroadcast extends AsyncTask<Void, Void, InetAddress> {
-    private InetAddress broadcastAddress;
-
-    /**
-     * Detect broadcast address
-     * Class B networks unsupported, because Android API sucks
-     * But who cares? Who uses class B network at home?
-     */
-    @Override
-    public void onPreExecute() {
-        try {
-            //Need to check all network interfaces, Set-Top-Boxes usually have Ethernet and Wi-Fi
-            Enumeration networkInterfaceEnum = NetworkInterface.getNetworkInterfaces();
-            do {
-                NetworkInterface networkInterface = (NetworkInterface) networkInterfaceEnum.nextElement();
-                //And all IPs in each network interface
-                Enumeration IPEnum = networkInterface.getInetAddresses();
-                while (IPEnum.hasMoreElements()) {
-                    InetAddress IP = (InetAddress) IPEnum.nextElement();
-                    if (!IP.isLoopbackAddress() && IP instanceof Inet4Address) {
-                        //Broadcast address = (ip & mask) | ~mask
-                        //But for local networks (class C) subnet mask is always 255.255.255.0
-                        byte [] ip = IP.getAddress();
-                        //So we need just to replace last byte with 255
-                        ip[3] = (byte) 255;
-                        broadcastAddress = InetAddress.getByAddress(ip);
-                        return;
-                    }
-                }
-            } while (networkInterfaceEnum.hasMoreElements());
-        } catch (UnknownHostException e) {
-            Log.e("UDPBroadcast", "Unknown host exception");
-        } catch (SocketException e) {
-            Log.e("UDPBroadcast", "Socket exception");
-        }
-    }
-
+public class UDPBroadcast extends AsyncTask<InetAddress, Void, InetAddress> {
     /**
      * Broadcast and listen to answer
      * @return InetAddress of server
      */
     @Override
-    public InetAddress doInBackground(Void... voids) {
+    public InetAddress doInBackground(InetAddress... broadcastAddress) {
         InetAddress temp = null;
         try {
             //Send Broadcast
@@ -67,7 +32,7 @@ public class UDPBroadcast extends AsyncTask<Void, Void, InetAddress> {
             DatagramPacket packet = new DatagramPacket(
                     "B".getBytes(),
                     "B".length(),
-                    broadcastAddress,
+                    broadcastAddress[0],
                     S.port
             );
             socket.send(packet);

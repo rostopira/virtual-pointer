@@ -2,11 +2,15 @@ package ua.rostopira.virtualpointer;
 
 import android.content.Intent;
 import android.hardware.SensorManager;
+import android.net.DhcpInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,67 +23,20 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import java.io.IOException;
+import java.net.InetAddress;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
     private SensorFusion sensorFusion;
-    private boolean timerRunning = false;
-    private CountDownTimer longPressTimer;
+    private GestureDetectorCompat mDetector;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        //Create round button
-        final ImageView btn = (ImageView) findViewById(R.id.tap_button);
-        btn.post(new Runnable() {
-            @Override
-            public void run() {
-                ViewGroup.LayoutParams mParams;
-                mParams = btn.getLayoutParams();
-                mParams.height = btn.getWidth();
-                btn.setLayoutParams(mParams);
-                btn.postInvalidate();
-            }
-        });
-
-        longPressTimer = new CountDownTimer(500, 500) {
-            @Override public void onTick(long millisUntilFinished) {}
-            @Override public void onFinish() {
-                btn.setImageResource(R.drawable.tap_btn);
-                btn.postInvalidate();
-                new UDPSender().execute("L");
-                timerRunning = false;
-            }
-        };
-        //Fill with white on touch and start/stop timer
-        /*
-        btn.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction() & MotionEvent.ACTION_MASK) {
-                    case MotionEvent.ACTION_DOWN:
-                    case MotionEvent.ACTION_POINTER_DOWN:
-                        btn.setImageResource(R.drawable.pressed_btn);
-                        longPressTimer.start();
-                        timerRunning = true;
-                        return true;
-                    case MotionEvent.ACTION_UP:
-                    case MotionEvent.ACTION_POINTER_UP:
-                        if (timerRunning) {
-                            longPressTimer.cancel();
-                            timerRunning = false;
-                            btn.setImageResource(R.drawable.tap_btn);
-                            new UDPSender().execute("T");
-                        }
-                        return true;
-                }
-                return false;
-            }
-        });
-        */
+        mDetector = new GestureDetectorCompat(this, new MyGestureListener());
 
         //On/off toggle
         Switch toggle = (Switch) findViewById(R.id.toggle);
@@ -88,12 +45,13 @@ public class MainActivity extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 TextView tv = (TextView) findViewById(R.id.status_text);
                 if (isChecked) {
-                    UDPBroadcast broadcast = new UDPBroadcast();
-                    broadcast.execute((Void)null);
                     try {
+                        UDPBroadcast broadcast = new UDPBroadcast();
+                        broadcast.execute(getBroadcastAddress());
                         if (broadcast.get(2, TimeUnit.SECONDS) == null) {
                             tv.setText("Failed");
                             buttonView.setChecked(false);
+                            buttonView.postInvalidate();
                         } else {
                             tv.setText("Server " + broadcast.get().getHostAddress());
                             sensorFusion.start();
@@ -110,6 +68,16 @@ public class MainActivity extends AppCompatActivity {
 
         sensorFusion = new SensorFusion((SensorManager)getSystemService(SENSOR_SERVICE));
         //toggle.toggle();
+    }
+
+    public InetAddress getBroadcastAddress() throws IOException {
+        WifiManager wifi = (WifiManager)getSystemService(WIFI_SERVICE);
+        DhcpInfo dhcp = wifi.getDhcpInfo();
+        int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
+        byte[] quads = new byte[4];
+        for (int k = 0; k < 4; k++)
+            quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
+        return InetAddress.getByAddress(quads);
     }
 
     @Override
@@ -161,6 +129,30 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             default:
                 return super.dispatchKeyEvent(event);
+        }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event){
+        this.mDetector.onTouchEvent(event);
+        return super.onTouchEvent(event);
+    }
+
+    class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
+        @Override
+        public boolean onSingleTapUp(MotionEvent event) {
+            new UDPSender().execute("T");
+            return true;
+        }
+        @Override
+        public void onLongPress(MotionEvent event) {
+            new UDPSender().execute("L");
+        }
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
+                                float distanceY) {
+            new UDPSender().execute("S",String.valueOf(distanceX),String.valueOf(distanceY));
+            return true;
         }
     }
 }

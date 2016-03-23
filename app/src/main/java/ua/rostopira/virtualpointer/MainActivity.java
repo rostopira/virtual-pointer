@@ -55,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         //Fill with white on touch and start/stop timer
+        /*
         btn.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -78,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+        */
 
         //On/off toggle
         Switch toggle = (Switch) findViewById(R.id.toggle);

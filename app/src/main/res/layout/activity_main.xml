@@ -24,7 +24,8 @@
         android:layout_marginBottom="64dp"
         android:src="@drawable/tap_btn"
         android:layout_gravity="center_horizontal"
-        android:id="@+id/tap_button" />
+        android:id="@+id/tap_button"
+        android:background="?attr/selectableItemBackground"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/center_btn"
@@ -61,7 +62,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@color/colorAccent"
+            style="@style/SelectableItemBackground"
             android:src="@drawable/ic_sysbar_back"
             android:onClick="onBtnClick" />
 
@@ -70,7 +71,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@color/colorAccent"
+            style="@style/SelectableItemBackground"
             android:src="@drawable/ic_sysbar_home"
             android:onClick="onBtnClick" />
 
@@ -79,7 +80,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@color/colorAccent"
+            style="@style/SelectableItemBackground"
             android:src="@drawable/ic_sysbar_recent"
             android:onClick="onBtnClick" />
 
